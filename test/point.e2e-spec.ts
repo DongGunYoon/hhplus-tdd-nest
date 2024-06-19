@@ -1,8 +1,9 @@
+import { PointHistoryResponse } from './../src/point/dto/point-history/point-history.response';
+import { UserPointResponse } from './../src/point/dto/user-point/user-point.response';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { Test } from '@nestjs/testing';
 import { PointModule } from '../src/point/point.module';
-import { PointHistory, UserPoint } from '../src/point/model/point.model';
 import { PointService } from '../src/point/service/point.service';
 import { pointServiceSymbol } from '../src/point/service/point.service.impl';
 
@@ -33,7 +34,7 @@ describe('PointController (e2e)', () => {
         .then(res => res.body);
 
       // Then
-      const response: UserPoint = result;
+      const response: UserPointResponse = result;
 
       expect(response.id).toBe(userId);
       expect(response.point).toBeGreaterThanOrEqual(0);
@@ -69,7 +70,7 @@ describe('PointController (e2e)', () => {
         .then(res => res.body);
 
       // Then
-      const response: PointHistory[] = result;
+      const response: PointHistoryResponse[] = result;
 
       expect(response.length).toBe(0);
     });
@@ -87,7 +88,7 @@ describe('PointController (e2e)', () => {
         .then(res => res.body);
 
       // Then
-      const response: PointHistory[] = result;
+      const response: PointHistoryResponse[] = result;
 
       expect(response.length).toBe(2);
     });
@@ -107,7 +108,7 @@ describe('PointController (e2e)', () => {
         .then(res => res.body);
 
       // Then
-      const response: UserPoint = result;
+      const response: UserPointResponse = result;
 
       expect(response.id).toBe(userId);
       expect(response.point).toBe(chargeAmount);
@@ -128,7 +129,7 @@ describe('PointController (e2e)', () => {
         .then(res => res.body);
 
       // Then
-      const response: UserPoint = result;
+      const response: UserPointResponse = result;
 
       expect(response.id).toBe(userId);
       expect(response.point).toBe(prevAmount + chargeAmount);
@@ -170,7 +171,7 @@ describe('PointController (e2e)', () => {
         .then(res => res.body);
 
       // Then
-      const response: UserPoint = result;
+      const response: UserPointResponse = result;
 
       expect(response.id).toBe(userId);
       expect(response.point).toBe(prevAmount - useAmount);
