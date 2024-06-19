@@ -2,8 +2,11 @@ import { Module } from '@nestjs/common';
 import { PointController } from './controller/point.controller';
 import { DatabaseModule } from '../database/database.module';
 import { PointServiceImpl, pointServiceSymbol } from './service/point.service.impl';
-import { PointHistoryRepositoryImpl, pointHistoryRepositorySymbol } from './repository/point-hisotry.repository.impl';
-import { UserPointRepositoryImpl, userPointRepositorySymbol } from './repository/user-point.repository.impl';
+import {
+  PointHistoryRepositoryImpl,
+  pointHistoryRepositorySymbol,
+} from './repository/point-history/point-hisotry.repository.impl';
+import { UserPointRepositoryImpl, userPointRepositorySymbol } from './repository/user-point/user-point.repository.impl';
 
 @Module({
   imports: [DatabaseModule],

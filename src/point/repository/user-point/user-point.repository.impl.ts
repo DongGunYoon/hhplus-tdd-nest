@@ -1,6 +1,6 @@
 import { UserPointRepository } from './user-point.repository';
-import { UserPoint } from '../model/point.model';
-import { UserPointTable } from '../../database/userpoint.table';
+import { UserPoint } from '../../model/point.model';
+import { UserPointTable } from '../../../database/userpoint.table';
 import { Injectable } from '@nestjs/common';
 
 export const userPointRepositorySymbol = Symbol.for('UserPointRepository');

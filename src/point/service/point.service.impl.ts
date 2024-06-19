@@ -1,11 +1,11 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Mutex, MutexInterface } from 'async-mutex';
-import { UserPointRepository } from '../repository/user-point.repository';
-import { PointHistoryRepository } from '../repository/point-history.repository';
+import { UserPointRepository } from '../repository/user-point/user-point.repository';
+import { PointHistoryRepository } from '../repository/point-history/point-history.repository';
 import { PointHistory, TransactionType, UserPoint } from '../model/point.model';
 import { PointService } from './point.service';
-import { userPointRepositorySymbol } from '../repository/user-point.repository.impl';
-import { pointHistoryRepositorySymbol } from '../repository/point-hisotry.repository.impl';
+import { userPointRepositorySymbol } from '../repository/user-point/user-point.repository.impl';
+import { pointHistoryRepositorySymbol } from '../repository/point-history/point-hisotry.repository.impl';
 
 export const pointServiceSymbol = Symbol.for('PointService');
 

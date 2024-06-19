@@ -1,11 +1,11 @@
-import { PointHistoryRepository } from '../repository/point-history.repository';
+import { PointHistoryRepository } from '../repository/point-history/point-history.repository';
 import { Test } from '@nestjs/testing';
 import { PointService } from './point.service';
-import { UserPointRepository } from '../repository/user-point.repository';
+import { UserPointRepository } from '../repository/user-point/user-point.repository';
 import { PointHistory, TransactionType } from '../model/point.model';
 import { PointServiceImpl, pointServiceSymbol } from './point.service.impl';
-import { pointHistoryRepositorySymbol } from '../repository/point-hisotry.repository.impl';
-import { userPointRepositorySymbol } from '../repository/user-point.repository.impl';
+import { pointHistoryRepositorySymbol } from '../repository/point-history/point-hisotry.repository.impl';
+import { userPointRepositorySymbol } from '../repository/user-point/user-point.repository.impl';
 
 describe('PointService', () => {
   let pointService: PointService;

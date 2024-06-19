@@ -1,6 +1,6 @@
 import { PointHistoryRepository } from './point-history.repository';
-import { TransactionType, PointHistory } from '../model/point.model';
-import { PointHistoryTable } from '../../database/pointhistory.table';
+import { TransactionType, PointHistory } from '../../model/point.model';
+import { PointHistoryTable } from '../../../database/pointhistory.table';
 import { Injectable } from '@nestjs/common';
 
 export const pointHistoryRepositorySymbol = Symbol.for('PointHistoryRepository');

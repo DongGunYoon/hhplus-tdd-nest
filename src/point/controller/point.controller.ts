@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Inject, Param, ParseIntPipe, Patch, UsePipes, ValidationPipe } from '@nestjs/common';
 import { PointHistory, UserPoint } from '../model/point.model';
-import { PointBody as PointDto } from '../interface/point.dto';
+import { PointBody as PointDto } from '../dto/point.dto';
 import { PointService } from '../service/point.service';
 import { pointServiceSymbol } from '../service/point.service.impl';
 

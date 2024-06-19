@@ -2,8 +2,14 @@ import { PointService } from './point.service';
 import { PointServiceImpl, pointServiceSymbol } from './point.service.impl';
 import { Test } from '@nestjs/testing';
 import { TransactionType } from '../model/point.model';
-import { UserPointRepositoryImpl, userPointRepositorySymbol } from '../repository/user-point.repository.impl';
-import { PointHistoryRepositoryImpl, pointHistoryRepositorySymbol } from '../repository/point-hisotry.repository.impl';
+import {
+  UserPointRepositoryImpl,
+  userPointRepositorySymbol,
+} from '../repository/user-point/user-point.repository.impl';
+import {
+  PointHistoryRepositoryImpl,
+  pointHistoryRepositorySymbol,
+} from '../repository/point-history/point-hisotry.repository.impl';
 import { DatabaseModule } from '../../database/database.module';
 
 describe('PointService', () => {
@@ -200,6 +206,23 @@ describe('PointService', () => {
         expect(e.status).toBe(400);
         expect(e.message).toBe('사용 가능한 포인트가 부족합니다.');
       }
+    });
+  });
+
+  describe('포인트 충전/사용 동시성', () => {
+    it('동시에 포인트 충전/차감/충전 요청이 와도 잘 처리하는지 확인합니다.', async () => {
+      // Given
+      await pointService.charge(1, 10000);
+
+      // When
+      const work1 = () => pointService.charge(1, 1000);
+      const work2 = () => pointService.use(1, 100);
+      const work3 = async () => pointService.charge(1, 1000);
+      await Promise.all([work1(), work2(), work3()]);
+
+      // Then
+      const userPoint = await pointService.getPoint(1);
+      expect(userPoint.point).toEqual(10000 + 1000 - 100 + 1000);
     });
   });
 });
