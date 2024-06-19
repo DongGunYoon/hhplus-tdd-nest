@@ -2,10 +2,12 @@ import { PointHistoryRepository } from '../repository/point-history/point-histor
 import { Test } from '@nestjs/testing';
 import { PointService } from './point.service';
 import { UserPointRepository } from '../repository/user-point/user-point.repository';
-import { PointHistory, TransactionType } from '../model/point.model';
+import { TransactionType } from '../model/point.model';
 import { PointServiceImpl, pointServiceSymbol } from './point.service.impl';
 import { pointHistoryRepositorySymbol } from '../repository/point-history/point-hisotry.repository.impl';
 import { userPointRepositorySymbol } from '../repository/user-point/user-point.repository.impl';
+import { UserPointDomain } from '../domain/user-point/user-point.domain';
+import { PointHistoryDomain } from '../domain/point-history/point-history.domain';
 
 describe('PointService', () => {
   let pointService: PointService;
@@ -40,7 +42,7 @@ describe('PointService', () => {
     it('유저의 현재 포인트를 조회합니다.', async () => {
       // Given
       const userId = 1;
-      const userPoint = { id: userId, point: 100, updateMillis: Date.now() };
+      const userPoint = new UserPointDomain(userId, 100, Date.now());
       jest.spyOn(userPointRepository, 'getByUserId').mockResolvedValue(userPoint);
 
       // When
@@ -69,8 +71,8 @@ describe('PointService', () => {
       // Given
       const userId = 1;
       const chargeAmount = 100;
-      const prevUserPoint = { id: userId, point: 0, updateMillis: Date.now() };
-      const updatedUserPoint = { id: userId, point: chargeAmount, updateMillis: Date.now() };
+      const prevUserPoint = new UserPointDomain(userId, 0, Date.now());
+      const updatedUserPoint = new UserPointDomain(userId, chargeAmount, Date.now());
       jest.spyOn(userPointRepository, 'getByUserId').mockResolvedValue(prevUserPoint);
       jest.spyOn(userPointRepository, 'upsert').mockResolvedValue(updatedUserPoint);
 
@@ -81,7 +83,7 @@ describe('PointService', () => {
       expect(userPointRepository.getByUserId).toHaveBeenCalledTimes(1);
       expect(userPointRepository.getByUserId).toHaveBeenCalledWith(userId);
       expect(userPointRepository.upsert).toHaveBeenCalledTimes(1);
-      expect(userPointRepository.upsert).toHaveBeenCalledWith(userId, chargeAmount);
+      expect(userPointRepository.upsert).toHaveBeenCalledWith(updatedUserPoint);
       expect(pointHistoryRepository.create).toHaveBeenCalledTimes(1);
       expect(result).toEqual(updatedUserPoint);
     });
@@ -91,15 +93,14 @@ describe('PointService', () => {
       const userId = 1;
       const prevAmount = 1000;
       const chargeAmount = 100;
-      const prevUserPoint = { id: userId, point: prevAmount, updateMillis: Date.now() };
-      const updatedUserPoint = { id: userId, point: prevAmount + chargeAmount, updateMillis: Date.now() };
-      const pointHistory = {
-        id: 1,
-        userId: userId,
-        type: TransactionType.CHARGE,
-        amount: chargeAmount,
-        timeMillis: updatedUserPoint.updateMillis,
-      };
+      const prevUserPoint = new UserPointDomain(userId, prevAmount, Date.now());
+      const updatedUserPoint = new UserPointDomain(userId, prevAmount + chargeAmount, Date.now());
+      const pointHistory = PointHistoryDomain.create(
+        userId,
+        chargeAmount,
+        TransactionType.CHARGE,
+        updatedUserPoint.updateMillis,
+      );
       jest.spyOn(userPointRepository, 'getByUserId').mockResolvedValue(prevUserPoint);
       jest.spyOn(userPointRepository, 'upsert').mockResolvedValue(updatedUserPoint);
       jest.spyOn(pointHistoryRepository, 'create').mockResolvedValue(pointHistory);
@@ -111,14 +112,9 @@ describe('PointService', () => {
       expect(userPointRepository.getByUserId).toHaveBeenCalledTimes(1);
       expect(userPointRepository.getByUserId).toHaveBeenCalledWith(userId);
       expect(userPointRepository.upsert).toHaveBeenCalledTimes(1);
-      expect(userPointRepository.upsert).toHaveBeenCalledWith(userId, prevAmount + chargeAmount);
+      expect(userPointRepository.upsert).toHaveBeenCalledWith(updatedUserPoint);
       expect(pointHistoryRepository.create).toHaveBeenCalledTimes(1);
-      expect(pointHistoryRepository.create).toHaveBeenCalledWith(
-        userId,
-        chargeAmount,
-        TransactionType.CHARGE,
-        result.updateMillis,
-      );
+      expect(pointHistoryRepository.create).toHaveBeenCalledWith(pointHistory);
       expect(result).toEqual(updatedUserPoint);
     });
 
@@ -126,30 +122,24 @@ describe('PointService', () => {
       // Given
       const userId = 1;
       const chargeAmount = 100;
-      const prevUserPoint = { id: userId, point: 0, updateMillis: Date.now() };
-      const updatedUserPoint = { id: userId, point: chargeAmount, updateMillis: Date.now() };
-      const pointHistory = {
-        id: 1,
-        userId: userId,
-        type: TransactionType.CHARGE,
-        amount: chargeAmount,
-        timeMillis: updatedUserPoint.updateMillis,
-      };
+      const prevUserPoint = new UserPointDomain(userId, 0, Date.now());
+      const updatedUserPoint = new UserPointDomain(userId, chargeAmount, Date.now());
+      const pointHistory = PointHistoryDomain.create(
+        userId,
+        chargeAmount,
+        TransactionType.CHARGE,
+        updatedUserPoint.updateMillis,
+      );
       jest.spyOn(userPointRepository, 'getByUserId').mockResolvedValue(prevUserPoint);
       jest.spyOn(userPointRepository, 'upsert').mockResolvedValue(updatedUserPoint);
       jest.spyOn(pointHistoryRepository, 'create').mockResolvedValue(pointHistory);
 
       // When
-      const result = await pointService.charge(userId, chargeAmount);
+      await pointService.charge(userId, chargeAmount);
 
       // Then
       expect(pointHistoryRepository.create).toHaveBeenCalledTimes(1);
-      expect(pointHistoryRepository.create).toHaveBeenCalledWith(
-        userId,
-        chargeAmount,
-        TransactionType.CHARGE,
-        result.updateMillis,
-      );
+      expect(pointHistoryRepository.create).toHaveBeenCalledWith(pointHistory);
     });
   });
 
@@ -159,8 +149,8 @@ describe('PointService', () => {
       const userId = 1;
       const prevAmount = 1000;
       const useAmount = 100;
-      const prevUserPoint = { id: userId, point: prevAmount, updateMillis: Date.now() };
-      const updatedUserPoint = { id: userId, point: prevAmount - useAmount, updateMillis: Date.now() };
+      const prevUserPoint = new UserPointDomain(userId, prevAmount, Date.now());
+      const updatedUserPoint = new UserPointDomain(userId, prevAmount - useAmount, Date.now());
       jest.spyOn(userPointRepository, 'getByUserId').mockResolvedValue(prevUserPoint);
       jest.spyOn(userPointRepository, 'upsert').mockResolvedValue(updatedUserPoint);
 
@@ -171,14 +161,7 @@ describe('PointService', () => {
       expect(userPointRepository.getByUserId).toHaveBeenCalledTimes(1);
       expect(userPointRepository.getByUserId).toHaveBeenCalledWith(userId);
       expect(userPointRepository.upsert).toHaveBeenCalledTimes(1);
-      expect(userPointRepository.upsert).toHaveBeenCalledWith(userId, prevAmount - useAmount);
-      expect(pointHistoryRepository.create).toHaveBeenCalledTimes(1);
-      expect(pointHistoryRepository.create).toHaveBeenCalledWith(
-        userId,
-        useAmount,
-        TransactionType.USE,
-        result.updateMillis,
-      );
+      expect(userPointRepository.upsert).toHaveBeenCalledWith(updatedUserPoint);
       expect(result).toEqual(updatedUserPoint);
     });
 
@@ -187,15 +170,14 @@ describe('PointService', () => {
       const userId = 1;
       const prevAmount = 1000;
       const useAmount = 100;
-      const prevUserPoint = { id: userId, point: prevAmount, updateMillis: Date.now() };
-      const updatedUserPoint = { id: userId, point: prevAmount - useAmount, updateMillis: Date.now() };
-      const pointHistory = {
-        id: 1,
-        userId: userId,
-        type: TransactionType.USE,
-        amount: useAmount,
-        timeMillis: updatedUserPoint.updateMillis,
-      };
+      const prevUserPoint = new UserPointDomain(userId, prevAmount, Date.now());
+      const updatedUserPoint = new UserPointDomain(userId, prevAmount - useAmount, Date.now());
+      const pointHistory = PointHistoryDomain.create(
+        userId,
+        useAmount,
+        TransactionType.USE,
+        updatedUserPoint.updateMillis,
+      );
       jest.spyOn(userPointRepository, 'getByUserId').mockResolvedValue(prevUserPoint);
       jest.spyOn(userPointRepository, 'upsert').mockResolvedValue(updatedUserPoint);
       jest.spyOn(pointHistoryRepository, 'create').mockResolvedValue(pointHistory);
@@ -205,12 +187,7 @@ describe('PointService', () => {
 
       // Then
       expect(pointHistoryRepository.create).toHaveBeenCalledTimes(1);
-      expect(pointHistoryRepository.create).toHaveBeenCalledWith(
-        userId,
-        useAmount,
-        TransactionType.USE,
-        result.updateMillis,
-      );
+      expect(pointHistoryRepository.create).toHaveBeenCalledWith(pointHistory);
       expect(result).toEqual(updatedUserPoint);
     });
 
@@ -219,7 +196,7 @@ describe('PointService', () => {
       const userId = 1;
       const prevAmount = 100;
       const useAmount = 1000;
-      const prevUserPoint = { id: userId, point: prevAmount, updateMillis: Date.now() };
+      const prevUserPoint = new UserPointDomain(userId, prevAmount, Date.now());
       jest.spyOn(userPointRepository, 'getByUserId').mockResolvedValue(prevUserPoint);
 
       // When
@@ -236,15 +213,7 @@ describe('PointService', () => {
     it('유저의 포인트 충전/이용 내역이 존재하면 해당 내역을 반환합니다.', async () => {
       // Given
       const userId = 1;
-      const pointHistories = [
-        {
-          id: 1,
-          userId: userId,
-          type: TransactionType.CHARGE,
-          amount: 100,
-          timeMillis: Date.now(),
-        },
-      ];
+      const pointHistories = [new PointHistoryDomain(1, userId, 100, TransactionType.CHARGE, Date.now())];
       jest.spyOn(pointHistoryRepository, 'getAllByUserId').mockResolvedValue(pointHistories);
 
       // When
@@ -260,7 +229,7 @@ describe('PointService', () => {
     it('유저의 포인트 충전/이용 내역이 없으면 빈 배열을 반환합니다.', async () => {
       // Given
       const userId = 1;
-      const pointHistories: PointHistory[] = [];
+      const pointHistories: PointHistoryDomain[] = [];
       jest.spyOn(pointHistoryRepository, 'getAllByUserId').mockResolvedValue(pointHistories);
 
       // When

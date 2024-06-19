@@ -2,6 +2,7 @@ import { Test } from '@nestjs/testing';
 import { UserPointRepository } from './user-point.repository';
 import { UserPointTable } from '../../../database/userpoint.table';
 import { UserPointRepositoryImpl, userPointRepositorySymbol } from './user-point.repository.impl';
+import { UserPointDomain } from '../../domain/user-point/user-point.domain';
 
 describe('UserPointRepository', () => {
   let userPointRepository: UserPointRepository;
@@ -25,6 +26,8 @@ describe('UserPointRepository', () => {
     it('유저 포인트 조회 시, 정상적으로 DB 로직을 호출하는지 확인합니다.', async () => {
       // Given
       const userId = 1;
+      const userPoint = { id: userId, point: 0, updateMillis: Date.now() };
+      jest.spyOn(userPointTable, 'selectById').mockResolvedValue(userPoint);
 
       // When
       await userPointRepository.getByUserId(userId);
@@ -52,9 +55,11 @@ describe('UserPointRepository', () => {
       // Given
       const userId = 1;
       const amount = 1000;
+      const userPoint = { id: userId, point: amount, updateMillis: Date.now() };
+      jest.spyOn(userPointTable, 'insertOrUpdate').mockResolvedValue(userPoint);
 
       // When
-      await userPointRepository.upsert(userId, amount);
+      await userPointRepository.upsert(new UserPointDomain(userPoint.id, userPoint.point, userPoint.updateMillis));
 
       // Then
       expect(userPointTable.insertOrUpdate).toHaveBeenCalledTimes(1);
@@ -68,7 +73,7 @@ describe('UserPointRepository', () => {
       jest.spyOn(userPointTable, 'insertOrUpdate').mockRejectedValue(new Error('올바르지 않은 ID 값 입니다.'));
 
       // When
-      const work = () => userPointRepository.upsert(userId, amount);
+      const work = () => userPointRepository.upsert(new UserPointDomain(userId, amount, Date.now()));
 
       // Then
       expect(work).rejects.toThrow('올바르지 않은 ID 값 입니다.');

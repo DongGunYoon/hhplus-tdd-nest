@@ -3,6 +3,7 @@ import { PointHistoryRepository } from './point-history.repository';
 import { PointHistoryRepositoryImpl, pointHistoryRepositorySymbol } from './point-hisotry.repository.impl';
 import { PointHistoryTable } from '../../../database/pointhistory.table';
 import { TransactionType } from '../../model/point.model';
+import { PointHistoryDomain } from '../../domain/point-history/point-history.domain';
 
 describe('PointHistoryRepository', () => {
   let pointHistoryRepository: PointHistoryRepository;
@@ -29,9 +30,11 @@ describe('PointHistoryRepository', () => {
       const amount = 1000;
       const transactionType = TransactionType.CHARGE;
       const updateMillis = Date.now();
+      const pointHistory = PointHistoryDomain.create(userId, amount, transactionType, updateMillis);
+      jest.spyOn(pointHistoryTable, 'insert').mockResolvedValue(pointHistory);
 
       // When
-      await pointHistoryRepository.create(userId, amount, transactionType, updateMillis);
+      await pointHistoryRepository.create(pointHistory);
 
       // Then
       expect(pointHistoryTable.insert).toHaveBeenCalledTimes(1);
@@ -40,11 +43,17 @@ describe('PointHistoryRepository', () => {
   });
 
   describe('포인트 히스토리 내역 조회', () => {
-    it('포인트 히스토리가 내역 조회 시, 정상적으로 DB 로직을 호출하는지 확인합니다.', async () => {
+    it('포인트 히스토리 내역 조회 시, 정상적으로 DB 로직을 호출하는지 확인합니다.', async () => {
       // Given
       const userId = 1;
+      const amount = 1000;
+      const transactionType = TransactionType.CHARGE;
+      const updateMillis = Date.now();
+      const pointHistory = PointHistoryDomain.create(userId, amount, transactionType, updateMillis);
+      jest.spyOn(pointHistoryTable, 'selectAllByUserId').mockResolvedValue([pointHistory]);
 
       // When
+
       await pointHistoryRepository.getAllByUserId(userId);
 
       // Then

@@ -1,7 +1,8 @@
 import { UserPointRepository } from './user-point.repository';
-import { UserPoint } from '../../model/point.model';
 import { UserPointTable } from '../../../database/userpoint.table';
 import { Injectable } from '@nestjs/common';
+import { UserPointDomain } from '../../domain/user-point/user-point.domain';
+import { UserPointMapper } from '../../mapper/user-point/user-point.mapper';
 
 export const userPointRepositorySymbol = Symbol.for('UserPointRepository');
 
@@ -9,11 +10,15 @@ export const userPointRepositorySymbol = Symbol.for('UserPointRepository');
 export class UserPointRepositoryImpl implements UserPointRepository {
   constructor(private readonly userPointTable: UserPointTable) {}
 
-  getByUserId(id: number): Promise<UserPoint> {
-    return this.userPointTable.selectById(id);
+  async getByUserId(id: number): Promise<UserPointDomain> {
+    const userPoint = await this.userPointTable.selectById(id);
+
+    return UserPointMapper.toDomain(userPoint);
   }
 
-  upsert(id: number, amount: number): Promise<UserPoint> {
-    return this.userPointTable.insertOrUpdate(id, amount);
+  async upsert(userPointDomain: UserPointDomain): Promise<UserPointDomain> {
+    const userPoint = await this.userPointTable.insertOrUpdate(userPointDomain.id, userPointDomain.point);
+
+    return UserPointMapper.toDomain(userPoint);
   }
 }

@@ -1,6 +1,6 @@
-import { UserPoint } from 'src/point/model/point.model';
+import { UserPointDomain } from '../../domain/user-point/user-point.domain';
 
 export interface UserPointRepository {
-  getByUserId(id: number): Promise<UserPoint>;
-  upsert(id: number, amount: number): Promise<UserPoint>;
+  getByUserId(id: number): Promise<UserPointDomain>;
+  upsert(userPointDomain: UserPointDomain): Promise<UserPointDomain>;
 }

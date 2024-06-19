@@ -1,8 +1,8 @@
-import { PointHistory } from 'src/point/model/point.model';
 import { PointHistoryResponse } from './point-history.response';
+import { PointHistoryDomain } from '../../domain/point-history/point-history.domain';
 
 export class PointHistoriesResponse {
-  static from(pointHistories: PointHistory[]): PointHistoryResponse[] {
+  static from(pointHistories: PointHistoryDomain[]): PointHistoryResponse[] {
     return pointHistories.map(pointHistory => PointHistoryResponse.from(pointHistory));
   }
 }

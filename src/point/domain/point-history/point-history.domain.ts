@@ -10,7 +10,7 @@ export class PointHistoryDomain {
     public timeMillis: number,
   ) {}
 
-  createHistory(
+  static create(
     userId: number,
     amount: number,
     transactionType: TransactionType,

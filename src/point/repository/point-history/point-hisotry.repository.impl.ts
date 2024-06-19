@@ -1,7 +1,8 @@
 import { PointHistoryRepository } from './point-history.repository';
-import { TransactionType, PointHistory } from '../../model/point.model';
 import { PointHistoryTable } from '../../../database/pointhistory.table';
 import { Injectable } from '@nestjs/common';
+import { PointHistoryDomain } from '../../domain/point-history/point-history.domain';
+import { PointHistoryMapper } from '../../mapper/point-history/point-history.mapper';
 
 export const pointHistoryRepositorySymbol = Symbol.for('PointHistoryRepository');
 
@@ -9,16 +10,20 @@ export const pointHistoryRepositorySymbol = Symbol.for('PointHistoryRepository')
 export class PointHistoryRepositoryImpl implements PointHistoryRepository {
   constructor(private readonly pointHistoryTable: PointHistoryTable) {}
 
-  create(
-    userId: number,
-    amount: number,
-    transactionType: TransactionType,
-    updateMillis: number,
-  ): Promise<PointHistory> {
-    return this.pointHistoryTable.insert(userId, amount, transactionType, updateMillis);
+  async create(pointHistoryDomain: PointHistoryDomain): Promise<PointHistoryDomain> {
+    const pointHistory = await this.pointHistoryTable.insert(
+      pointHistoryDomain.userId,
+      pointHistoryDomain.amount,
+      pointHistoryDomain.type,
+      pointHistoryDomain.timeMillis,
+    );
+
+    return PointHistoryMapper.toDomain(pointHistory);
   }
 
-  getAllByUserId(userId: number): Promise<PointHistory[]> {
-    return this.pointHistoryTable.selectAllByUserId(userId);
+  async getAllByUserId(userId: number): Promise<PointHistoryDomain[]> {
+    const pointHistories = await this.pointHistoryTable.selectAllByUserId(userId);
+
+    return pointHistories.map(pointHistory => PointHistoryMapper.toDomain(pointHistory));
   }
 }

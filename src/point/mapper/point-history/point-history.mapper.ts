@@ -3,15 +3,15 @@ import { PointHistory } from '../../model/point.model';
 
 export class PointHistoryMapper {
   static toDomain(entity: PointHistory): PointHistoryDomain {
-    return new PointHistoryDomain(entity.id, entity.userId, entity.type, entity.amount, entity.timeMillis);
+    return new PointHistoryDomain(entity.id, entity.userId, entity.amount, entity.type, entity.timeMillis);
   }
 
   static toEntity(domain: PointHistoryDomain): PointHistory {
     return {
       id: domain.id,
       userId: domain.userId,
-      type: domain.type,
       amount: domain.amount,
+      type: domain.type,
       timeMillis: domain.timeMillis,
     };
   }

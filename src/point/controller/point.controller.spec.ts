@@ -3,6 +3,8 @@ import { PointController } from './point.controller';
 import { PointService } from '../service/point.service';
 import { TransactionType } from '../model/point.model';
 import { pointServiceSymbol } from '../service/point.service.impl';
+import { UserPointDomain } from '../domain/user-point/user-point.domain';
+import { PointHistoryDomain } from '../domain/point-history/point-history.domain';
 
 describe('PointController', () => {
   let pointController: PointController;
@@ -29,7 +31,7 @@ describe('PointController', () => {
     it('유저의 포인트를 조회합니다.', async () => {
       // Given
       const userId = 1;
-      const userPoint = { id: userId, point: 100, updateMillis: Date.now() };
+      const userPoint = new UserPointDomain(userId, 100, Date.now());
       jest.spyOn(pointService, 'getPoint').mockResolvedValue(userPoint);
 
       // When
@@ -46,15 +48,7 @@ describe('PointController', () => {
     it('유저의 포인트 충전/이용 내역을 조회합니다.', async () => {
       // Given
       const userId = 1;
-      const pointHistories = [
-        {
-          id: 1,
-          userId: userId,
-          type: TransactionType.CHARGE,
-          amount: 100,
-          timeMillis: Date.now(),
-        },
-      ];
+      const pointHistories = [new PointHistoryDomain(1, userId, 100, TransactionType.CHARGE, Date.now())];
       jest.spyOn(pointService, 'getPointHistories').mockResolvedValue(pointHistories);
 
       // When
@@ -72,11 +66,7 @@ describe('PointController', () => {
       // Given
       const userId = 1;
       const chargeAmount = 100;
-      const updatedUserPoint = {
-        id: userId,
-        point: chargeAmount,
-        updateMillis: Date.now(),
-      };
+      const updatedUserPoint = new UserPointDomain(userId, chargeAmount, Date.now());
       jest.spyOn(pointService, 'charge').mockResolvedValue(updatedUserPoint);
 
       // When
@@ -97,11 +87,7 @@ describe('PointController', () => {
       const userId = 1;
       const prevAmount = 1000;
       const useAmount = 100;
-      const updatedUserPoint = {
-        id: userId,
-        point: prevAmount - useAmount,
-        updateMillis: Date.now(),
-      };
+      const updatedUserPoint = new UserPointDomain(userId, prevAmount - useAmount, Date.now());
       jest.spyOn(pointService, 'use').mockResolvedValue(updatedUserPoint);
 
       // When

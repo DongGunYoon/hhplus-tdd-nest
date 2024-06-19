@@ -1,6 +1,6 @@
-import { PointHistory, TransactionType } from 'src/point/model/point.model';
+import { PointHistoryDomain } from '../../domain/point-history/point-history.domain';
 
 export interface PointHistoryRepository {
-  create(userId: number, amount: number, transactionType: TransactionType, updateMillis: number): Promise<PointHistory>;
-  getAllByUserId(userId: number): Promise<PointHistory[]>;
+  create(pointHistoryDomain: PointHistoryDomain): Promise<PointHistoryDomain>;
+  getAllByUserId(userId: number): Promise<PointHistoryDomain[]>;
 }
