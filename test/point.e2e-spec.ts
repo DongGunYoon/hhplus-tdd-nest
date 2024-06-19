@@ -133,6 +133,25 @@ describe('PointController (e2e)', () => {
       expect(response.id).toBe(userId);
       expect(response.point).toBe(prevAmount + chargeAmount);
     });
+
+    it('음수의 포인트 충전을 시도하면 에러가 발생한다. (400)', async () => {
+      // Given
+      const userId = 1;
+      const chargeAmount = -100;
+
+      // When
+      const result = await request(app.getHttpServer())
+        .patch(`/point/${userId}/charge`)
+        .send({ amount: chargeAmount })
+        .expect(400)
+        .then(res => res.body);
+
+      // Then
+      const response: { error: string; statusCode: number } = result;
+
+      expect(response.error).toBe('Bad Request');
+      expect(response.statusCode).toBe(400);
+    });
   });
 
   describe('특정 유저 포인트 사용 - PATCH /point/:id/use', () => {
@@ -173,6 +192,25 @@ describe('PointController (e2e)', () => {
       const response: { message: string; statusCode: number } = result;
       expect(response.statusCode).toBe(400);
       expect(response.message).toBe('사용 가능한 포인트가 부족합니다.');
+    });
+
+    it('음수의 포인트 사용을 시도하면 에러가 발생한다. (400)', async () => {
+      // Given
+      const userId = 1;
+      const useAmount = -100;
+
+      // When
+      const result = await request(app.getHttpServer())
+        .patch(`/point/${userId}/use`)
+        .send({ amount: useAmount })
+        .expect(400)
+        .then(res => res.body);
+
+      // Then
+      const response: { error: string; statusCode: number } = result;
+
+      expect(response.error).toBe('Bad Request');
+      expect(response.statusCode).toBe(400);
     });
   });
 });
