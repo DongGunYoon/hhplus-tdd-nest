@@ -80,10 +80,10 @@ export class PointServiceImpl implements PointService {
   }
 
   private async acquireLock(userId: number): Promise<MutexInterface.Releaser> {
-    if (!this.userLocks[userId]) {
-      this.userLocks[userId] = new Mutex();
+    if (!this.userLocks.has(userId)) {
+      this.userLocks.set(userId, new Mutex());
     }
 
-    return await this.userLocks[userId].acquire();
+    return await this.userLocks.get(userId).acquire();
   }
 }

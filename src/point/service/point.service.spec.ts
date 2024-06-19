@@ -2,7 +2,7 @@ import { PointHistoryRepository } from '../repository/point-history.repository';
 import { Test } from '@nestjs/testing';
 import { PointService } from './point.service';
 import { UserPointRepository } from '../repository/user-point.repository';
-import { TransactionType } from '../model/point.model';
+import { PointHistory, TransactionType } from '../model/point.model';
 import { PointServiceImpl, pointServiceSymbol } from './point.service.impl';
 import { pointHistoryRepositorySymbol } from '../repository/point-hisotry.repository.impl';
 import { userPointRepositorySymbol } from '../repository/user-point.repository.impl';
@@ -64,7 +64,7 @@ describe('PointService', () => {
     it('유저의 포인트 충전/이용 내역이 없으면 빈 배열을 반환합니다.', async () => {
       // Given
       const userId = 1;
-      const pointHistories = [];
+      const pointHistories: PointHistory[] = [];
       jest.spyOn(pointHistoryRepository, 'getAllByUserId').mockResolvedValue(pointHistories);
 
       // When
