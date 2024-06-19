@@ -36,48 +36,6 @@ describe('PointService', () => {
     userPointRepository = module.get<UserPointRepository>(userPointRepositorySymbol);
   });
 
-  describe('포인트 충전/이용 내역 조회', () => {
-    it('유저의 포인트 충전/이용 내역이 존재하면 해당 내역을 반환합니다.', async () => {
-      // Given
-      const userId = 1;
-      const pointHistories = [
-        {
-          id: 1,
-          userId: userId,
-          type: TransactionType.CHARGE,
-          amount: 100,
-          timeMillis: Date.now(),
-        },
-      ];
-      jest.spyOn(pointHistoryRepository, 'getAllByUserId').mockResolvedValue(pointHistories);
-
-      // When
-      const result = await pointService.getPointHistories(userId);
-
-      // Then
-      expect(pointHistoryRepository.getAllByUserId).toHaveBeenCalledTimes(1);
-      expect(pointHistoryRepository.getAllByUserId).toHaveBeenCalledWith(userId);
-      expect(result).toHaveLength(1);
-      expect(result).toEqual(pointHistories);
-    });
-
-    it('유저의 포인트 충전/이용 내역이 없으면 빈 배열을 반환합니다.', async () => {
-      // Given
-      const userId = 1;
-      const pointHistories: PointHistory[] = [];
-      jest.spyOn(pointHistoryRepository, 'getAllByUserId').mockResolvedValue(pointHistories);
-
-      // When
-      const result = await pointService.getPointHistories(userId);
-
-      // Then
-      expect(pointHistoryRepository.getAllByUserId).toHaveBeenCalledTimes(1);
-      expect(pointHistoryRepository.getAllByUserId).toHaveBeenCalledWith(userId);
-      expect(result).toHaveLength(0);
-      expect(result).toEqual(pointHistories);
-    });
-  });
-
   describe('포인트 조회', () => {
     it('유저의 현재 포인트를 조회합니다.', async () => {
       // Given
@@ -92,6 +50,17 @@ describe('PointService', () => {
       expect(userPointRepository.getByUserId).toHaveBeenCalledTimes(1);
       expect(userPointRepository.getByUserId).toHaveBeenCalledWith(userId);
       expect(result).toEqual(userPoint);
+    });
+
+    it('유저의 아이디가 유효하지 않으면 에러가 발생합니다.', async () => {
+      // Given
+      const userId = -1;
+
+      // When
+      const work = () => pointService.getPoint(userId);
+
+      // Then
+      expect(work()).rejects.toThrow('올바르지 않은 ID 값 입니다.');
     });
   });
 
@@ -253,10 +222,55 @@ describe('PointService', () => {
       const prevUserPoint = { id: userId, point: prevAmount, updateMillis: Date.now() };
       jest.spyOn(userPointRepository, 'getByUserId').mockResolvedValue(prevUserPoint);
 
-      // When, Then
-      await expect(pointService.use(userId, useAmount)).rejects.toThrow(Error);
+      // When
+      const work = () => pointService.use(userId, useAmount);
+
+      // Then
+      await expect(work).rejects.toThrow(Error);
       expect(userPointRepository.getByUserId).toHaveBeenCalledTimes(1);
       expect(userPointRepository.getByUserId).toHaveBeenCalledWith(userId);
+    });
+  });
+
+  describe('포인트 충전/이용 내역 조회', () => {
+    it('유저의 포인트 충전/이용 내역이 존재하면 해당 내역을 반환합니다.', async () => {
+      // Given
+      const userId = 1;
+      const pointHistories = [
+        {
+          id: 1,
+          userId: userId,
+          type: TransactionType.CHARGE,
+          amount: 100,
+          timeMillis: Date.now(),
+        },
+      ];
+      jest.spyOn(pointHistoryRepository, 'getAllByUserId').mockResolvedValue(pointHistories);
+
+      // When
+      const result = await pointService.getPointHistories(userId);
+
+      // Then
+      expect(pointHistoryRepository.getAllByUserId).toHaveBeenCalledTimes(1);
+      expect(pointHistoryRepository.getAllByUserId).toHaveBeenCalledWith(userId);
+      expect(result).toHaveLength(1);
+      expect(result).toEqual(pointHistories);
+    });
+
+    it('유저의 포인트 충전/이용 내역이 없으면 빈 배열을 반환합니다.', async () => {
+      // Given
+      const userId = 1;
+      const pointHistories: PointHistory[] = [];
+      jest.spyOn(pointHistoryRepository, 'getAllByUserId').mockResolvedValue(pointHistories);
+
+      // When
+      const result = await pointService.getPointHistories(userId);
+
+      // Then
+      expect(pointHistoryRepository.getAllByUserId).toHaveBeenCalledTimes(1);
+      expect(pointHistoryRepository.getAllByUserId).toHaveBeenCalledWith(userId);
+      expect(result).toHaveLength(0);
+      expect(result).toEqual(pointHistories);
     });
   });
 });

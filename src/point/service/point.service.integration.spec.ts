@@ -28,41 +28,6 @@ describe('PointService', () => {
     pointService = module.get<PointService>(pointServiceSymbol);
   });
 
-  describe('포인트 충전/이용 내역 조회', () => {
-    it('유저의 포인트 충전/이용 내역이 있다면, 순서에 맞게 해당 내역을 반환합니다.', async () => {
-      // Given
-      const userId = 1;
-      await pointService.charge(userId, 1000);
-      await pointService.use(userId, 300);
-      await pointService.use(userId, 400);
-      await pointService.charge(userId, 100);
-
-      // When
-      const pointHistories = await pointService.getPointHistories(userId);
-
-      // Then
-      expect(pointHistories[0].amount).toBe(1000);
-      expect(pointHistories[0].type).toBe(TransactionType.CHARGE);
-      expect(pointHistories[1].amount).toBe(300);
-      expect(pointHistories[1].type).toBe(TransactionType.USE);
-      expect(pointHistories[2].amount).toBe(400);
-      expect(pointHistories[2].type).toBe(TransactionType.USE);
-      expect(pointHistories[3].amount).toBe(100);
-      expect(pointHistories[3].type).toBe(TransactionType.CHARGE);
-    });
-
-    it('유저의 포인트 충전/이용 내역이 없다면 빈 내역을 반환합니다.', async () => {
-      // Given
-      const userId = 1;
-
-      // When
-      const pointHistories = await pointService.getPointHistories(userId);
-
-      // Then
-      expect(pointHistories).toHaveLength(0);
-    });
-  });
-
   describe('포인트 조회', () => {
     it('유저가 포인트 충전 이력이 없다면 0 포인트를 반환합니다.', async () => {
       // Given
@@ -206,6 +171,41 @@ describe('PointService', () => {
         expect(e.status).toBe(400);
         expect(e.message).toBe('사용 가능한 포인트가 부족합니다.');
       }
+    });
+  });
+
+  describe('포인트 충전/이용 내역 조회', () => {
+    it('유저의 포인트 충전/이용 내역이 있다면, 순서에 맞게 해당 내역을 반환합니다.', async () => {
+      // Given
+      const userId = 1;
+      await pointService.charge(userId, 1000);
+      await pointService.use(userId, 300);
+      await pointService.use(userId, 400);
+      await pointService.charge(userId, 100);
+
+      // When
+      const pointHistories = await pointService.getPointHistories(userId);
+
+      // Then
+      expect(pointHistories[0].amount).toBe(1000);
+      expect(pointHistories[0].type).toBe(TransactionType.CHARGE);
+      expect(pointHistories[1].amount).toBe(300);
+      expect(pointHistories[1].type).toBe(TransactionType.USE);
+      expect(pointHistories[2].amount).toBe(400);
+      expect(pointHistories[2].type).toBe(TransactionType.USE);
+      expect(pointHistories[3].amount).toBe(100);
+      expect(pointHistories[3].type).toBe(TransactionType.CHARGE);
+    });
+
+    it('유저의 포인트 충전/이용 내역이 없다면 빈 내역을 반환합니다.', async () => {
+      // Given
+      const userId = 1;
+
+      // When
+      const pointHistories = await pointService.getPointHistories(userId);
+
+      // Then
+      expect(pointHistories).toHaveLength(0);
     });
   });
 
