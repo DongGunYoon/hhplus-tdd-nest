@@ -55,6 +55,17 @@ describe('PointService', () => {
       expect(userPoint.id).toBe(userId);
       expect(userPoint.point).toBe(1000 + 300 - 1300);
     });
+
+    it('유저의 아이디가 유효하지 않으면 에러가 발생합니다.', async () => {
+      // Given
+      const userId = -1;
+
+      // When
+      const work = async () => pointService.getPoint(userId);
+
+      // Then
+      await expect(work).rejects.toThrow('올바르지 않은 ID 값 입니다.');
+    });
   });
 
   describe('포인트 충전', () => {
@@ -103,6 +114,17 @@ describe('PointService', () => {
       expect(secondUserPoint.point).toBe(secondUserUse.amount);
       expect(thirdUserPoint.id).toBe(thirdUserUse.userId);
       expect(thirdUserPoint.point).toBe(thirdUserUse.amount);
+    });
+
+    it('포인트 충전 시, 포인트가 유효하지 않으면 에러가 발생합니다.', async () => {
+      // Given
+      const amount = -100;
+
+      // When
+      const work = async () => pointService.charge(1, amount);
+
+      // Then
+      await expect(work).rejects.toThrow('포인트는 0보다 커야 합니다.');
     });
   });
 
@@ -172,6 +194,17 @@ describe('PointService', () => {
         expect(e.message).toBe('사용 가능한 포인트가 부족합니다.');
       }
     });
+
+    it('포인트 사용 시, 포인트가 유효하지 않으면 에러가 발생합니다.', async () => {
+      // Given
+      const amount = -100;
+
+      // When
+      const work = async () => pointService.use(1, amount);
+
+      // Then
+      await expect(work).rejects.toThrow('포인트는 0보다 커야 합니다.');
+    });
   });
 
   describe('포인트 충전/이용 내역 조회', () => {
@@ -217,12 +250,27 @@ describe('PointService', () => {
       // When
       const work1 = () => pointService.charge(1, 1000);
       const work2 = () => pointService.use(1, 100);
-      const work3 = async () => pointService.charge(1, 1000);
+      const work3 = () => pointService.charge(1, 1000);
       await Promise.all([work1(), work2(), work3()]);
 
       // Then
       const userPoint = await pointService.getPoint(1);
       expect(userPoint.point).toEqual(10000 + 1000 - 100 + 1000);
+    });
+
+    it('동시에 포인트 충전/충전/차감 요청이 와도 잘 처리하는지 확인합니다.', async () => {
+      // Given
+      await pointService.charge(1, 10000);
+
+      // When
+      const work1 = () => pointService.charge(1, 1000);
+      const work2 = () => pointService.charge(1, 1000);
+      const work3 = () => pointService.use(1, 100);
+      await Promise.all([work1(), work2(), work3()]);
+
+      // Then
+      const userPoint = await pointService.getPoint(1);
+      expect(userPoint.point).toEqual(10000 + 1000 + 1000 - 100);
     });
   });
 });
