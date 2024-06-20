@@ -23,7 +23,7 @@ export class UserPointDomain {
     this.point -= amount;
   }
 
-  validateAmount(amount: number): void {
+  private validateAmount(amount: number): void {
     if (amount <= 0) {
       throw new BadRequestException('포인트는 0보다 커야 합니다.');
     }
